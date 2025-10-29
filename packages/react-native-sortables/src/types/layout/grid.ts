@@ -14,6 +14,7 @@ export type GridLayoutProps = {
   shouldAnimateLayout?: boolean;
   requestNextLayout?: boolean;
   startCrossOffset?: Maybe<number>;
+  noVerticalGaps?: boolean;
 };
 
 export type GridLayout = {

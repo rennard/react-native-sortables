@@ -136,9 +136,15 @@ export type SortableGridProps<I> = Simplify<
        * @important Works only for horizontal grids. Requires the rows property to be set.
        */
       rowHeight?: number;
-      /** When true, removes vertical gaps between grid rows.
+      /** When true, renders the grid in masonry-style layout with no vertical gaps.
        * 
-       * This sets rowGap to 0 regardless of the rowGap prop value.
+       * In masonry layout, items stack tightly within each column with no vertical
+       * spacing between them, similar to Pinterest's layout. Each column independently
+       * tracks its height, and items are placed in sequential order (left to right).
+       * 
+       * This is different from the default grid layout where all items in a row
+       * align vertically and have the same y-position.
+       * 
        * Horizontal gaps (columnGap) remain unaffected.
        * @default false
        */

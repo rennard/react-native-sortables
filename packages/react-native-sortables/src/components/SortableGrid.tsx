@@ -71,19 +71,15 @@ function SortableGrid<I>(props: SortableGridProps<I>) {
     data: params => orderItems(data, items, params, true)
   });
 
-  // Override rowGap to 0 when noVerticalGaps is true
-  const effectiveRest = noVerticalGaps
-    ? { ...rest, rowGap: 0 }
-    : rest;
-
   return (
     <ItemsProvider items={items} renderItem={renderItem}>
       <SortableGridInner
-        {...effectiveRest}
+        {...rest}
         {...callbacks}
         groups={groups}
         isVertical={isVertical}
         key={useStrategyKey(strategy)}
+        noVerticalGaps={noVerticalGaps}
         rowHeight={rowHeight} // must be specified for horizontal grids
         strategy={strategy}
         onDragEnd={onDragEnd}
@@ -114,6 +110,7 @@ const SortableGridInner = typedMemo(function SortableGridInner<I>({
   isVertical,
   itemEntering,
   itemExiting,
+  noVerticalGaps,
   overflow,
   rowGap: _rowGap,
   rowHeight,
@@ -147,6 +144,7 @@ const SortableGridInner = typedMemo(function SortableGridInner<I>({
       controlledItemDimensions={controlledItemDimensions}
       debug={debug}
       isVertical={isVertical}
+      noVerticalGaps={noVerticalGaps}
       numGroups={groups}
       rowGap={rowGap}
       rowHeight={rowHeight}

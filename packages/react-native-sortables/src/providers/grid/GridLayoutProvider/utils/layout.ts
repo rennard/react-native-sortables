@@ -8,7 +8,94 @@ import type {
 import { resolveDimension } from '../../../../utils';
 import { getCrossIndex, getMainIndex } from './helpers';
 
-export const calculateLayout = ({
+/**
+ * Calculates masonry-style layout where items stack tightly in each column
+ * with no vertical gaps between items within the same column
+ */
+const calculateMasonryLayout = ({
+  gaps,
+  indexToKey,
+  isVertical,
+  itemHeights,
+  itemWidths,
+  numGroups,
+  startCrossOffset
+}: GridLayoutProps): GridLayout | null => {
+  'worklet';
+  const mainGroupSize = (isVertical ? itemWidths : itemHeights) as
+    | null
+    | number;
+
+  if (!mainGroupSize) {
+    return null;
+  }
+
+  const itemPositions: Record<string, Vector> = {};
+
+  let mainCoordinate: Coordinate;
+  let crossCoordinate: Coordinate;
+  let crossItemSizes;
+
+  if (isVertical) {
+    // grid with specified number of columns (vertical orientation)
+    mainCoordinate = 'x';
+    crossCoordinate = 'y';
+    crossItemSizes = itemHeights;
+  } else {
+    // grid with specified number of rows (horizontal orientation)
+    mainCoordinate = 'y';
+    crossCoordinate = 'x';
+    crossItemSizes = itemWidths;
+  }
+
+  // Track the current height/position of each column independently
+  const columnHeights = new Array(numGroups).fill(startCrossOffset ?? 0);
+
+  for (const [itemIndex, itemKey] of indexToKey.entries()) {
+    const crossItemSize = resolveDimension(crossItemSizes, itemKey);
+
+    if (crossItemSize === null) {
+      return null;
+    }
+
+    const mainIndex = getMainIndex(itemIndex, numGroups);
+    const crossAxisOffset = columnHeights[mainIndex]!;
+
+    // Update item position
+    itemPositions[itemKey] = {
+      [crossCoordinate]: crossAxisOffset,
+      [mainCoordinate]: mainIndex * (mainGroupSize + gaps.main)
+    } as Vector;
+
+    // Update column height (no gap added since we want tight stacking)
+    columnHeights[mainIndex] = crossAxisOffset + crossItemSize;
+  }
+
+  // Find the tallest column
+  const maxColumnHeight = Math.max(...columnHeights);
+  const mainSize = (mainGroupSize + gaps.main) * numGroups - gaps.main;
+
+  return {
+    containerCrossSize: maxColumnHeight,
+    contentBounds: [
+      {
+        [crossCoordinate]: startCrossOffset ?? 0,
+        [mainCoordinate]: 0
+      } as Vector,
+      {
+        [crossCoordinate]: maxColumnHeight,
+        [mainCoordinate]: mainSize
+      } as Vector
+    ],
+    crossAxisOffsets: columnHeights,
+    itemPositions
+  };
+};
+
+/**
+ * Calculates standard grid layout where items in the same row align vertically
+ */
+const calculateStandardLayout = ({
   gaps,
   indexToKey,
   isVertical,
@@ -93,6 +180,13 @@ export const calculateLayout = ({
     crossAxisOffsets,
     itemPositions
   };
+};
+
+export const calculateLayout = (props: GridLayoutProps): GridLayout | null => {
+  'worklet';
+  return props.noVerticalGaps
+    ? calculateMasonryLayout(props)
+    : calculateStandardLayout(props);
 };
 
 export const calculateItemCrossOffset = ({
