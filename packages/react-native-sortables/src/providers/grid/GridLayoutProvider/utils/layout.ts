@@ -9,8 +9,9 @@ import { resolveDimension } from '../../../../utils';
 import { getCrossIndex, getMainIndex } from './helpers';
 
 /**
- * Calculates masonry-style layout where items stack tightly in each column
- * with no vertical gaps between items within the same column
+ * Calculates layout where items stack tightly in each column with no vertical gaps.
+ * Items maintain their sequential grid order (respecting columns), but are placed
+ * flush against each other vertically within their column.
  */
 const calculateMasonryLayout = ({
   gaps,
@@ -49,6 +50,7 @@ const calculateMasonryLayout = ({
   }
 
   // Track the current height/position of each column independently
+  // Each column stacks its items flush with no gaps
   const columnHeights = new Array(numGroups).fill(startCrossOffset ?? 0);
 
   for (const [itemIndex, itemKey] of indexToKey.entries()) {
@@ -58,20 +60,21 @@ const calculateMasonryLayout = ({
       return null;
     }
 
+    // Determine which column this item belongs to based on grid order
     const mainIndex = getMainIndex(itemIndex, numGroups);
     const crossAxisOffset = columnHeights[mainIndex]!;
 
-    // Update item position
+    // Update item position - place it at the current column height
     itemPositions[itemKey] = {
       [crossCoordinate]: crossAxisOffset,
       [mainCoordinate]: mainIndex * (mainGroupSize + gaps.main)
     } as Vector;
 
-    // Update column height (no gap added since we want tight stacking)
+    // Update column height - add this item's height with NO gap
     columnHeights[mainIndex] = crossAxisOffset + crossItemSize;
   }
 
-  // Find the tallest column
+  // Container size is determined by the tallest column
   const maxColumnHeight = Math.max(...columnHeights);
   const mainSize = (mainGroupSize + gaps.main) * numGroups - gaps.main;
 
