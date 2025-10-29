@@ -136,6 +136,13 @@ export type SortableGridProps<I> = Simplify<
        * @important Works only for horizontal grids. Requires the rows property to be set.
        */
       rowHeight?: number;
+      /** When true, removes vertical gaps between grid rows.
+       * 
+       * This sets rowGap to 0 regardless of the rowGap prop value.
+       * Horizontal gaps (columnGap) remain unaffected.
+       * @default false
+       */
+      noVerticalGaps?: boolean;
     }
 >;
 

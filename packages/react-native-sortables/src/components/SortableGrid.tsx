@@ -29,6 +29,7 @@ function SortableGrid<I>(props: SortableGridProps<I>) {
     columns,
     data,
     keyExtractor = defaultKeyExtractor,
+    noVerticalGaps,
     onActiveItemDropped,
     onDragEnd: _onDragEnd,
     onDragMove,
@@ -70,10 +71,15 @@ function SortableGrid<I>(props: SortableGridProps<I>) {
     data: params => orderItems(data, items, params, true)
   });
 
+  // Override rowGap to 0 when noVerticalGaps is true
+  const effectiveRest = noVerticalGaps
+    ? { ...rest, rowGap: 0 }
+    : rest;
+
   return (
     <ItemsProvider items={items} renderItem={renderItem}>
       <SortableGridInner
-        {...rest}
+        {...effectiveRest}
         {...callbacks}
         groups={groups}
         isVertical={isVertical}
